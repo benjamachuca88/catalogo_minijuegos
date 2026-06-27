@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo de Minijuegos</title>
+  <style>
+    /* ============================================
+       VARIABLES Y RESET
+       ============================================ */
+    :root {
+      --bg: #f0f2f5;
+      --surface: #ffffff;
+      --text: #1a1a2e;
+      --text-secondary: #555;
+      --accent: #6c63ff;
+      --accent-hover: #5a52d5;
+      --shadow: rgba(0,0,0,0.1);
+      --shadow-hover: rgba(108,99,255,0.3);
+      --header-bg: linear-gradient(135deg, #6c63ff, #3f3d9e);
+      --search-bg: #fff;
+      --search-border: #ddd;
+      --card-border: #e8e8e8;
+      --transition: 0.3s ease;
+    }
+
+    /* Modo oscuro */
+    [data-theme="dark"] {
+      --bg: #0f0f23;
+      --surface: #1a1a3e;
+      --text: #e0e0e0;
+      --text-secondary: #aaa;
+      --shadow: rgba(0,0,0,0.3);
+      --shadow-hover: rgba(108,99,255,0.5);
+      --search-bg: #1a1a3e;
+      --search-border: #333;
+      --card-border: #2a2a4a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background var(--transition), color var(--transition);
+      min-height: 100vh;
+    }
+
+    /* ============================================
+       ENCABEZADO
+       ============================================ */
+    header {
+      background: var(--header-bg);
+      color: #fff;
+      padding: 2rem 1.5rem 1.5rem;
+      text-align: center;
+      position: relative;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    header p {
+      opacity: 0.85;
+      margin-top: 0.4rem;
+      font-size: 1.05rem;
+    }
+
+    /* Botón modo oscuro */
+    .theme-toggle {
+      position: absolute;
+      top: 1.2rem;
+      right: 1.5rem;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      font-size: 1.3rem;
+      cursor: pointer;
+      transition: background var(--transition), transform var(--transition);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(255,255,255,0.35);
+      transform: rotate(20deg);
+    }
+
+    /* ============================================
+       BARRA DE BÚSQUEDA
+       ============================================ */
+    .search-container {
+      max-width: 500px;
+      margin: -1.5rem auto 0;
+      padding: 0 1rem;
+      position: relative;
+      z-index: 10;
+    }
+
+    .search-container input {
+      width: 100%;
+      padding: 0.9rem 1.2rem 0.9rem 3rem;
+      border: 2px solid var(--search-border);
+      border-radius: 50px;
+      font-size: 1rem;
+      background: var(--search-bg);
+      color: var(--text);
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+      outline: none;
+    }
+
+    .search-container input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(108,99,255,0.15);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 1.8rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.1rem;
+      opacity: 0.5;
+    }
+
+    /* ============================================
+       GRID DE TARJETAS
+       ============================================ */
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    /* Mensaje cuando no hay resultados */
+    .no-results {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+    }
+
+    /* ============================================
+       TARJETA DE JUEGO
+       ============================================ */
+    .game-card {
+      background: var(--surface);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform var(--transition), box-shadow var(--transition);
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .game-card:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 12px 32px var(--shadow-hover);
+    }
+
+    .game-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      transition: transform var(--transition);
+    }
+
+    .game-card:hover img {
+      transform: scale(1.05);
+    }
+
+    .card-body {
+      padding: 1.2rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-body h3 {
+      font-size: 1.15rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-body p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      flex: 1;
+    }
+
+    .btn-play {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.6rem 1.4rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background var(--transition), transform var(--transition);
+      text-align: center;
+      text-decoration: none;
+    }
+
+    .btn-play:hover {
+      background: var(--accent-hover);
+      transform: scale(1.05);
+    }
+
+    /* ============================================
+       FOOTER
+       ============================================ */
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.6rem; }
+      .games-grid { grid-template-columns: 1fr; }
+      .theme-toggle { top: 0.8rem; right: 0.8rem; width: 38px; height: 38px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Encabezado principal -->
+  <header>
+    <h1>🎮 Catálogo de Minijuegos</h1>
+    <p>Encuentra y juega tus juegos favoritos</p>
+    <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">🌙</button>
+  </header>
+
+  <!-- Barra de búsqueda -->
+  <div class="search-container">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="Buscar juegos..." autocomplete="off">
+  </div>
+
+  <!-- Contenedor de tarjetas -->
+  <div class="container">
+    <div class="games-grid" id="gamesGrid"></div>
+  </div>
+
+  <footer>© 2026 Catálogo de Minijuegos — Todos los derechos reservados</footer>
+
+  <script>
+    // ============================================
+    // ARREGLO DE JUEGOS
+    // Para agregar un juego, simplemente añade un objeto al arreglo.
+    // ============================================
+    const juegos = [
+      {
+        id: 1,
+        nombre: "Snake",
+        descripcion: "El clásico juego de la serpiente. Come, crece y no choques contra ti mismo.",
+        imagen: "https://picsum.photos/seed/snake/400/250",
+        enlace: "#"
+      },
+      {
+        id: 2,
+        nombre: "Tetris",
+        descripcion: "Encaja las piezas y completa líneas en este legendario juego de puzzles.",
+        imagen: "https://picsum.photos/seed/tetris/400/250",
+        enlace: "#"
+      },
+      {
+        id: 3,
+        nombre: "Pac-Man",
+        descripcion: "Recorre el laberinto, come puntos y escapa de los fantasmas.",
+        imagen: "https://picsum.photos/seed/pacman/400/250",
+        enlace: "#"
+      },
+      {
+        id: 4,
+        nombre: "2048",
+        descripcion: "Combina números deslizando fichas hasta alcanzar el 2048.",
+        imagen: "https://picsum.photos/seed/2048game/400/250",
+        enlace: "#"
+      },
+      {
+        id: 5,
+        nombre: "Flappy Bird",
+        descripcion: "Haz volar al pájaro entre las tuberías sin chocar. ¿Cuánto aguantas?",
+        imagen: "https://picsum.photos/seed/flappy/400/250",
+        enlace: "#"
+      },
+      {
+        id: 6,
+        nombre: "Sudoku",
+        descripcion: "Rellena la cuadrícula 9×9 con números del 1 al 9 sin repetir.",
+        imagen: "https://picsum.photos/seed/sudoku/400/250",
+        enlace: "#"
+      },
+      {
+        id: 7,
+        nombre: "Ajedrez",
+        descripcion: "El juego de estrategia por excelencia. Jaque mate a tu oponente.",
+        imagen: "https://picsum.photos/seed/chess/400/250",
+        enlace: "#"
+      },
+      {
+        id: 8,
+        nombre: "Buscaminas",
+        descripcion: "Descubre todas las casillas sin detonar ninguna mina oculta.",
+        imagen: "https://picsum.photos/seed/minesweep/400/250",
+        enlace: "#"
+      },
+      {
+        id: 9,
+        nombre: "Tres en Raya",
+        descripcion: "Alinea tres fichas en fila, columna o diagonal para ganar.",
+        imagen: "https://picsum.photos/seed/tictactoe/400/250",
+        enlace: "#"
+      },
+      {
+        id: 10,
+        nombre: "Space Invaders",
+        descripcion: "Defiende la Tierra disparando a oleadas de invasores espaciales.",
+        imagen: "https://picsum.photos/seed/spaceinv/400/250",
+        enlace: "#"
+      }
+    ];
+
+    // ============================================
+    // RENDERIZAR TARJETAS
+    // ============================================
+    const grid = document.getElementById('gamesGrid');
+
+    function renderJuegos(lista) {
+      if (lista.length === 0) {
+        grid.innerHTML = '<div class="no-results">No se encontraron juegos 😕</div>';
+        return;
+      }
+      grid.innerHTML = lista.map(j => `
+        <a href="${j.enlace}" class="game-card">
+          <img src="${j.imagen}" alt="${j.nombre}" loading="lazy">
+          <div class="card-body">
+            <h3>${j.nombre}</h3>
+            <p>${j.descripcion}</p>
+            <span class="btn-play">▶ Jugar</span>
+          </div>
+        </a>
+      `).join('');
+    }
+
+    renderJuegos(juegos);
+
+    // ============================================
+    // BÚSQUEDA EN TIEMPO REAL
+    // Filtra juegos por nombre mientras el usuario escribe
+    // ============================================
+    document.getElementById('searchInput').addEventListener('input', function() {
+      const query = this.value.toLowerCase().trim();
+      const filtrados = juegos.filter(j => j.nombre.toLowerCase().includes(query));
+      renderJuegos(filtrados);
+    });
+
+    // ============================================
+    // MODO OSCURO
+    // Guarda la preferencia en localStorage
+    // ============================================
+    const toggle = document.getElementById('themeToggle');
+    const savedTheme = localStorage.getItem('theme');
+
+    if (savedTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      toggle.textContent = '☀️';
+    }
+
+    toggle.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        document.documentElement.removeAttribute('data-theme');
+        toggle.textContent = '🌙';
+        localStorage.setItem('theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        toggle.textContent = '☀️';
+        localStorage.setItem('theme', 'dark');
+      }
+    });
+  </script>
+</body>
+</html>
